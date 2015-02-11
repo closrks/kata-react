@@ -15,8 +15,27 @@ var Feed = React.createClass({displayName: "Feed",
 			{ key: '3', title: 'c', description: 'c', voteCount: 3 }
 		];
 		return {
-			items: FEED_ITEMS
+			items: FEED_ITEMS,
+			formDisplayed: false
 		};
+	},
+
+	onToggleForm: function () {
+		this.setState({
+			formDisplayed: !this.state.formDisplayed
+		});
+	},
+
+	onNewItem: function (newItem) {
+		var newItems = this.state.items.concat([newItem]);
+		this.setState({
+			items: newItems,
+			formDisplayed: false
+		});
+	},
+
+	onVote: function(item) {
+		console.log(item)
 	},
 
 	render: function () {
@@ -24,15 +43,15 @@ var Feed = React.createClass({displayName: "Feed",
 			React.createElement("div", null, 
 
 				React.createElement("div", {className: "container"}, 
-					React.createElement(ShowAddButton, null)
+					React.createElement(ShowAddButton, {displayed: this.state.formDisplayed, onToggleForm: this.onToggleForm})
 				), 
 
-				React.createElement(FeedForm, null), 
+				React.createElement(FeedForm, {displayed: this.state.formDisplayed, onNewItem: this.onNewItem}), 
 
 				React.createElement("br", null), 
 				React.createElement("br", null), 
 
-				React.createElement(FeedList, {items: this.state.items})
+				React.createElement(FeedList, {items: this.state.items, onVote: this.onVote})
 
 			)
 		);
@@ -49,12 +68,32 @@ var React = require('react');
 
 var FeedForm = React.createClass({displayName: "FeedForm",
 
-	render: function() {
+	handleForm: function (e) {
+		e.preventDefault();
+
+		var newItem = {
+			title: this.refs.title.getDOMNode().value,
+			description: this.refs.desc.getDOMNode().value,
+			voteCount: 0
+		};
+
+		this.refs.feedForm.getDOMNode().reset();
+
+		this.props.onNewItem(newItem);
+
+	},
+
+	render: function () {
+
+		var display = this.props.displayed ? 'block' : 'none';
+		var styles = {
+			display: display
+		};
 		return (
-			React.createElement("form", {className: "container"}, 
+			React.createElement("form", {ref: "feedForm", style: styles, id: "feedForm", className: "container", onSubmit: this.handleForm}, 
 				React.createElement("div", {className: "form-group"}, 
-					React.createElement("input", {type: "text", className: "form-control", placeholder: "Title"}), 
-					React.createElement("input", {type: "text", className: "form-control", placeholder: "Description"}), 
+					React.createElement("input", {ref: "title", type: "text", className: "form-control", placeholder: "Title"}), 
+					React.createElement("input", {ref: "desc", type: "text", className: "form-control", placeholder: "Description"}), 
 					React.createElement("button", {type: "submit", className: "btn btn-primary btn-block"}, "Add")
 				)
 			)
@@ -72,15 +111,35 @@ var React = require('react');
 
 var FeedItem = React.createClass({displayName: "FeedItem",
 
-	render: function() {
+	vote: function (newCount) {
+		this.props.onVote({
+			title: this.props.title,
+			description: this.props.desc,
+			voteCount: newCount
+		});
+	},
+
+	voteUp: function () {
+		var count = parseInt(this.props.voteCount, 10);
+		var newCount = count + 1;
+		this.vote(newCount);
+	},
+
+	voteDown: function () {
+		var count = parseInt(this.props.voteCount, 10);
+		var newCount = count - 1;
+		this.vote(newCount);
+	},
+
+	render: function () {
 		return (
-			React.createElement("li", {className: "list-group-item"}, 
+			React.createElement("li", {key: this.props.key, className: "list-group-item"}, 
 				React.createElement("span", {className: "badge badge-success"}, this.props.voteCount), 
 				React.createElement("h4", null, this.props.title), 
 				React.createElement("span", null, this.props.desc), 
 				React.createElement("span", {className: "pull-right"}, 
-					React.createElement("button", {id: "up", className: "btn btn-sm btn-primary"}, "↑"), 
-					React.createElement("button", {id: "down", className: "btn btn-sm btn-primary"}, "↓")
+					React.createElement("button", {id: "up", className: "btn btn-sm btn-primary", onClick: this.voteUp}, "↑"), 
+					React.createElement("button", {id: "down", className: "btn btn-sm btn-primary", onClick: this.voteDown}, "↓")
 				)
 			)
 		);
@@ -100,8 +159,12 @@ var FeedList = React.createClass({displayName: "FeedList",
 	render: function () {
 
 		var feedItems = this.props.items.map(function (item) {
-			return React.createElement(FeedItem, {title: item.title, desc: item.description, voteCount: item.voteCount})
-		});
+			return React.createElement(FeedItem, {key: item.key, 
+							 title: item.title, 
+							 desc: item.description, 
+							 voteCount: item.voteCount, 
+							 onVote: this.props.onVote})
+		}.bind(this));
 
 		return (
 			React.createElement("ul", {className: "list-group container"}, 
@@ -121,8 +184,23 @@ var React = require('react');
 var ShowAddButton = React.createClass({displayName: "ShowAddButton",
 
 	render: function() {
+
+		var classString,
+			buttonText;
+
+		if (this.props.displayed) {
+			classString = 'btn btn-default btn-block';
+			buttonText = 'Cancel';
+		} else {
+			classString = 'btn btn-success btn-block';
+			buttonText = 'Create New Item'
+		}
+
 		return (
-			React.createElement("button", {className: "btn btn-success btn-block"}, "Create New Item")			
+			React.createElement("button", {className: classString, 
+					onClick: this.props.onToggleForm}, 
+					buttonText
+			)			
 		);
 	}
 

@@ -14,8 +14,27 @@ var Feed = React.createClass({
 			{ key: '3', title: 'c', description: 'c', voteCount: 3 }
 		];
 		return {
-			items: FEED_ITEMS
+			items: FEED_ITEMS,
+			formDisplayed: false
 		};
+	},
+
+	onToggleForm: function () {
+		this.setState({
+			formDisplayed: !this.state.formDisplayed
+		});
+	},
+
+	onNewItem: function (newItem) {
+		var newItems = this.state.items.concat([newItem]);
+		this.setState({
+			items: newItems,
+			formDisplayed: false
+		});
+	},
+
+	onVote: function(item) {
+		console.log(item)
 	},
 
 	render: function () {
@@ -23,15 +42,15 @@ var Feed = React.createClass({
 			<div>
 
 				<div className="container">
-					<ShowAddButton />
+					<ShowAddButton displayed={this.state.formDisplayed} onToggleForm={this.onToggleForm} />
 				</div>
 
-				<FeedForm />
+				<FeedForm displayed={this.state.formDisplayed} onNewItem={this.onNewItem} />
 
 				<br />
 				<br />
 
-				<FeedList items={this.state.items} />
+				<FeedList items={this.state.items} onVote={this.onVote} />
 
 			</div>
 		);
