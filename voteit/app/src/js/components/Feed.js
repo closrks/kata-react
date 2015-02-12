@@ -9,9 +9,8 @@ var Feed = React.createClass({
 
 	getInitialState: function () {
 		var FEED_ITEMS = [
-			{ key: '1', title: 'a', description: 'a', voteCount: 1 },
-			{ key: '2', title: 'b', description: 'b', voteCount: 2 },
-			{ key: '3', title: 'c', description: 'c', voteCount: 3 }
+			{ key: '1', title: 'a', description: 'a', voteCount: 10 },
+			{ key: '2', title: 'b', description: 'b', voteCount: 27 }
 		];
 		return {
 			items: FEED_ITEMS,
