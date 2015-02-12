@@ -2,28 +2,28 @@ var gulp = require('gulp'),
 	connect = require('gulp-connect'),
 	open = require('gulp-open'),
 	browserify = require('browserify'),
-	transform = require('vinyl-transform'),
-	source = require('vinyl-source-stream'),
 	concat = require('gulp-concat'),
 	reactify = require('reactify'),
-	react = require('gulp-react'),
+	// a tiny wrapp around Node stream2 Transform to avoid explicit subclassing noise
 	through2 = require('through2'),
 	port = process.env.port || 3031;
 
 // browserify files
 gulp.task('browserify', function () {
 
+	var browserified = through2.obj(function (file, enc, next) {
+		browserify(file.path)
+			.transform(reactify)
+			.bundle(function (err, res) {
+				// assumes file.contents is a buffer
+				file.contents = res;
+				next(null, file);
+			});
+	});
+
 	gulp.src('./app/src/js/main.js')
-    .pipe(through2.obj(function (file, enc, next){
-            browserify(file.path)
-                .transform(reactify)
-                .bundle(function(err, res){
-                    // assumes file.contents is a Buffer
-                    file.contents = res;
-                    next(null, file);
-                });
-        }))
-    .pipe(gulp.dest('./app/dist/js'))
+	    .pipe(browserified)
+    	.pipe(gulp.dest('./app/dist/js'))
 
 });
 
