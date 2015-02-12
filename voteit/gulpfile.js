@@ -11,6 +11,11 @@ var gulp = require('gulp'),
 // browserify files
 gulp.task('browserify', function () {
 
+	// initial solution failed write end
+	// https://medium.com/@sogko/gulp-browserify-the-gulp-y-way-bb359b3f9623
+	// modified solution
+	// https://github.com/substack/node-browserify/issues/1044
+
 	var browserified = through2.obj(function (file, enc, next) {
 		browserify(file.path)
 			.transform(reactify)
